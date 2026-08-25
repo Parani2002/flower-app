@@ -1,0 +1,45 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pytorchexample"
+version = "1.0.0"
+description = "Privacy-Preserving Diabetic Readmission Prediction — Federated Stacked Ensemble"
+requires-python = ">=3.11,<3.12"
+dependencies = [
+    "flwr>=1.15.0",
+    "torch>=2.2.0",
+    "pandas>=2.0.0",
+    "numpy>=1.26.0",
+    "scikit-learn>=1.4.0",
+    "imbalanced-learn>=0.12.0",
+    "xgboost>=2.0.0",
+    "opacus>=1.4.0",
+    "shap>=0.45.0",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["pytorchexample"]
+
+
+[tool.flwr.app]
+publisher = "parani"
+
+[tool.flwr.app.components]
+serverapp = "pytorchexample.server:app"
+clientapp = "pytorchexample.client:app"
+
+[tool.flwr.app.config]
+num-server-rounds = 5
+fraction-evaluate = 0.5
+learning-rate     = 0.001
+local-epochs      = 3
+save-model        = true
+
+[tool.flwr.federation]
+options.num-supernodes = 3
+options.backend.name = "simulation-io"
+
+[tool.flwr.federation.options.node-config]
+num-partitions = 3

@@ -1,0 +1,5 @@
+Flower App configuration warnings in '/Users/parani/Documents/flower-tutorial/quickstart-pytorch/pyproject.toml':
+- Recommended property "license" missing in [project]
+Using SuperLink: local (127.0.0.1:39093)
+Successfully started run 10350138210669963546
+[92mINFO [0m:      Starting logstream for run_id `10350138210669963546`
