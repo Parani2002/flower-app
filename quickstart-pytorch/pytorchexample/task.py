@@ -1,5 +1,8 @@
 """task.py — Diabetic Readmission Federated Stacked Ensemble"""
 
+from functools import lru_cache
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
 import torch
@@ -9,11 +12,12 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import f1_score, recall_score, roc_auc_score
 from sklearn.model_selection import train_test_split
-from xgboost import XGBClassifier
 from sklearn.preprocessing import StandardScaler
+from xgboost import XGBClassifier
 
-# Add this near the top of task.py
-DATA_PATH = "/Users/parani/Documents/flower-tutorial/quickstart-pytorch/pytorchexample/data/diabetic_data.csv"
+ROOT = Path(__file__).resolve().parent
+DATA_PATH = ROOT / "data" / "diabetic_data.csv"
+ARTIFACTS_DIR = ROOT / "artifacts"
 
 # ─────────────────────────────────────────
 # 1. META-LEARNER NETWORK  ← replaces Net (CNN)
@@ -37,17 +41,40 @@ class Net(nn.Module):
 # ─────────────────────────────────────────
 # 2. LOAD & PARTITION
 # ─────────────────────────────────────────
-def _load_and_preprocess() -> tuple[np.ndarray, np.ndarray]:
-    """Load CSV, encode, return X and y as numpy arrays."""
-    df = pd.read_csv(DATA_PATH)
+@lru_cache(maxsize=1)
+def load_raw_dataframe() -> pd.DataFrame:
+    return pd.read_csv(DATA_PATH)
+
+
+@lru_cache(maxsize=1)
+def _processed() -> tuple[np.ndarray, np.ndarray, tuple[str, ...]]:
+    """Load CSV, one-hot encode, return X, y, and feature column names."""
+    df = load_raw_dataframe().copy()
     df = df.drop(columns=["encounter_id", "patient_nbr"])
-    df["target"] = (df["readmitted"] == "<30").astype(int)
+    y = (df["readmitted"] == "<30").astype(int).values.astype(np.int32)
     df = df.drop(columns=["readmitted"])
     df = pd.get_dummies(df)
+    columns = tuple(df.columns)
+    X = df.values.astype(np.float32)
+    return X, y, columns
 
-    X = df.drop(columns=["target"]).values.astype(np.float32)
-    y = df["target"].values.astype(np.int32)
+
+def _load_and_preprocess() -> tuple[np.ndarray, np.ndarray]:
+    """Load CSV, encode, return X and y as numpy arrays."""
+    X, y, _ = _processed()
     return X, y
+
+
+def feature_columns() -> list[str]:
+    return list(_processed()[2])
+
+
+def raw_records_to_features(raw_df: pd.DataFrame) -> np.ndarray:
+    """Encode original CSV-shaped rows to the same feature space as training."""
+    df = raw_df.drop(columns=["encounter_id", "patient_nbr", "readmitted"], errors="ignore")
+    df = pd.get_dummies(df)
+    df = df.reindex(columns=feature_columns(), fill_value=0)
+    return df.values.astype(np.float32)
 
 
 def load_data(partition_id: int, num_partitions: int):
@@ -187,3 +214,25 @@ def test(
     f1     = f1_score(y, preds, zero_division=0)
     recall = recall_score(y, preds, zero_division=0)
     return auc, f1, recall
+
+
+# ─────────────────────────────────────────
+# 8. SERVING BUNDLE (API / hospital product)
+# ─────────────────────────────────────────
+def predict_readmission(
+    net: Net,
+    X: np.ndarray,
+    lr,
+    rf,
+    xgb,
+    scaler,
+    device: torch.device | None = None,
+) -> np.ndarray:
+    """Return P(readmitted < 30 days) for encoded feature rows."""
+    if device is None:
+        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    meta = generate_meta_features(X, lr, rf, xgb, scaler)
+    net.eval()
+    with torch.no_grad():
+        probs = net(torch.tensor(meta).to(device)).cpu().numpy().squeeze()
+    return np.atleast_1d(probs).astype(np.float32)

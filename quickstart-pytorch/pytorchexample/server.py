@@ -39,8 +39,12 @@ def main(grid: Grid, context: Context) -> None:
     )
 
     if context.run_config["save-model"]:
-        print("\nSaving final model...")
-        torch.save(result.arrays.to_torch_state_dict(), "final_model.pt")
+        from pytorchexample.task import ARTIFACTS_DIR
+
+        ARTIFACTS_DIR.mkdir(parents=True, exist_ok=True)
+        path = ARTIFACTS_DIR / "final_model.pt"
+        print(f"\nSaving final model to {path}...")
+        torch.save(result.arrays.to_torch_state_dict(), path)
 
 
 def global_evaluate(server_round: int, arrays: ArrayRecord) -> MetricRecord:
