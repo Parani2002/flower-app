@@ -9,6 +9,7 @@ from pathlib import Path
 
 import joblib
 import numpy as np
+import pandas as pd
 import torch
 from sklearn.model_selection import train_test_split
 
@@ -27,6 +28,8 @@ from pytorchexample.task import (  # noqa: E402
     test,
     train_base_learners,
 )
+from ml.config import CLEAN_DATA_PATH
+from ml.data.preprocess import preprocess_dataset
 
 
 def _load_net(path: Path) -> Net:
@@ -50,8 +53,9 @@ def build_serving_bundle(max_rows: int = 8000) -> dict:
     ARTIFACTS.mkdir(parents=True, exist_ok=True)
     started = time.time()
 
-    raw = load_raw_dataframe()
-    y_all = (raw["readmitted"] == "<30").astype(int).values
+    preprocess_dataset()
+    raw = pd.read_csv(CLEAN_DATA_PATH)
+    y_all = raw["readmitted"].astype(int).values
     rng = np.random.RandomState(7)
     if len(raw) > max_rows:
         pos = np.where(y_all == 1)[0]
@@ -66,7 +70,7 @@ def build_serving_bundle(max_rows: int = 8000) -> dict:
     else:
         sample = raw
 
-    y = (sample["readmitted"] == "<30").astype(int).values
+    y = sample["readmitted"].astype(int).values
     X = raw_records_to_features(sample)
     X_train, X_val, y_train, y_val = train_test_split(
         X, y, test_size=0.2, random_state=42, stratify=y

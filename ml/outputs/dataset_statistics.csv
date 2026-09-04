@@ -1,0 +1,15 @@
+statistic,value
+raw_rows,101766.0
+unique_patients_before_exclusions,71518.0
+duplicate_rows_removed,30248.0
+death_or_hospice_rows_removed,1545.0
+clean_rows,69973.0
+positive_rows,6277.0
+positive_rate,0.089706
+baseline_auprc,0.089706
+train_rows,48981.0
+train_positive_rate,0.089708
+validation_rows,10496.0
+validation_positive_rate,0.089748
+test_rows,10496.0
+test_positive_rate,0.089653

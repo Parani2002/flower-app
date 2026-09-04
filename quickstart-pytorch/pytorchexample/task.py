@@ -17,7 +17,7 @@ from sklearn.metrics import f1_score, recall_score, roc_auc_score
 from sklearn.model_selection import train_test_split
 
 from ml.config import DATASET_PATH, FEATURE_COLUMNS
-from ml.data.preprocess import load_all_data, preprocess_dataset, split_train_val_by_client
+from ml.data.preprocess import load_all_data, preprocess_dataset, split_train_val_by_client, transform_raw_records
 from ml.models.base_learners import train_base_learners
 
 ROOT = Path(__file__).resolve().parent
@@ -53,14 +53,7 @@ def feature_columns() -> list[str]:
 
 
 def raw_records_to_features(raw_df: pd.DataFrame) -> np.ndarray:
-    raw = raw_df.copy()
-    raw = raw.drop(columns=["encounter_id", "patient_nbr", "readmitted"], errors="ignore")
-    raw = pd.get_dummies(raw)
-    for feature in FEATURE_COLUMNS:
-        if feature not in raw.columns:
-            raw[feature] = 0.0
-    raw = raw.reindex(columns=FEATURE_COLUMNS, fill_value=0)
-    return raw.to_numpy(dtype=np.float32)
+    return transform_raw_records(raw_df)
 
 
 def load_data(partition_id: int, num_partitions: int):
