@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
@@ -61,7 +60,7 @@ def _icd_group(value: object) -> str:
 def _clean_raw_dataframe() -> tuple[pd.DataFrame, dict[str, object]]:
     raw = _load_raw_dataframe()
     ordered = raw.sort_values("encounter_id", kind="mergesort")
-    first = ordered.drop_duplicates("patient_nbr", keep="first").copy()
+    first = ordered.drop_duplicates("patient_nbr", keep="first").copy()  # keep the first encounter for each patient
     first_count = len(first)
     dispositions = pd.to_numeric(first["discharge_disposition_id"], errors="coerce")
     first = first[~dispositions.isin(DEATH_OR_HOSPICE_DISPOSITIONS)].copy()
@@ -127,6 +126,14 @@ def _fit_transformer(train: pd.DataFrame) -> None:
 
 
 def _prepare() -> pd.DataFrame:
+    required = [
+        CLEAN_DATA_PATH,
+        STATISTICS_PATH,
+        STATISTICS_TABLE_PATH,
+        *(SPLITS_DIR / f"{name}.csv" for name in ("train", "validation", "test")),
+    ]
+    if all(path.exists() for path in required):
+        return pd.read_csv(CLEAN_DATA_PATH)
     clean, stats = _clean_raw_dataframe()
     CLEAN_DATA_PATH.parent.mkdir(parents=True, exist_ok=True)
     clean.to_csv(CLEAN_DATA_PATH, index=False)
