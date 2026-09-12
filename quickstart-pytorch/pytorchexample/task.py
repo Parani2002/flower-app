@@ -17,7 +17,7 @@ from sklearn.metrics import f1_score, recall_score, roc_auc_score
 from sklearn.model_selection import train_test_split
 
 from ml.config import DATASET_PATH, FEATURE_COLUMNS
-from ml.data.preprocess import load_all_data, preprocess_dataset, split_train_val_by_client, transform_raw_records
+from ml.data.preprocess import get_train_data, split_train_val_by_client, transform_raw_records
 from ml.models.base_learners import train_base_learners
 
 ROOT = Path(__file__).resolve().parent
@@ -44,7 +44,7 @@ def load_raw_dataframe() -> pd.DataFrame:
 
 
 def _processed():
-    X, y = preprocess_dataset()
+    X, y = get_train_data()
     return X.to_numpy(dtype=np.float32), y.to_numpy(dtype=np.int32), tuple(FEATURE_COLUMNS)
 
 
@@ -61,7 +61,7 @@ def load_data(partition_id: int, num_partitions: int):
 
 
 def load_centralized_dataset():
-    X, y = load_all_data()
+    X, y = get_train_data()
     _, X_test, _, y_test = train_test_split(X, y, test_size=0.10, random_state=0, stratify=y)
     return X_test, y_test
 

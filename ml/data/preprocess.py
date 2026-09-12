@@ -150,15 +150,32 @@ def _prepare() -> pd.DataFrame:
     return clean
 
 
-def preprocess_dataset() -> tuple[pd.DataFrame, pd.Series]:
-    clean = _prepare()
+def _ensure_transformer_fitted() -> None:
+    if _scaler is None:
+        raise RuntimeError("The transformer must be fitted with get_train_data() first.")
+
+
+def get_train_data() -> tuple[pd.DataFrame, pd.Series]:
+    _prepare()
     train = pd.read_csv(SPLITS_DIR / "train.csv")
     _fit_transformer(train)
-    return _encode(clean.drop(columns="readmitted")), clean["readmitted"].astype(int)
+    return _encode(train.drop(columns="readmitted")), train["readmitted"].astype(int)
+
+
+def get_val_data() -> tuple[pd.DataFrame, pd.Series]:
+    _ensure_transformer_fitted()
+    validation = pd.read_csv(SPLITS_DIR / "validation.csv")
+    return _encode(validation.drop(columns="readmitted")), validation["readmitted"].astype(int)
+
+
+def get_test_data() -> tuple[pd.DataFrame, pd.Series]:
+    _ensure_transformer_fitted()
+    test = pd.read_csv(SPLITS_DIR / "test.csv")
+    return _encode(test.drop(columns="readmitted")), test["readmitted"].astype(int)
 
 
 def split_clients() -> list[pd.DataFrame]:
-    preprocess_dataset()
+    get_train_data()
     train = pd.read_csv(SPLITS_DIR / "train.csv")
     X = _encode(train.drop(columns="readmitted"))
     df = X.copy()
@@ -188,13 +205,8 @@ def split_train_val_by_client(client_id: int, client_shard: pd.DataFrame | None 
     return X_train.to_numpy(dtype=np.float64), X_val.to_numpy(dtype=np.float64), y_train, y_val
 
 
-def load_all_data() -> tuple[np.ndarray, np.ndarray]:
-    X, y = preprocess_dataset()
-    return X.to_numpy(dtype=np.float64), y.to_numpy(dtype=int)
-
-
 def transform_raw_records(raw_df: pd.DataFrame) -> np.ndarray:
-    preprocess_dataset()
+    get_train_data()
     raw = raw_df.drop(columns=DROP_COLUMNS | {"readmitted"}, errors="ignore").copy()
     for column in ("diag_1", "diag_2", "diag_3"):
         if column in raw:
