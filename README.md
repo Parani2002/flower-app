@@ -43,6 +43,14 @@ Open [http://localhost:5173](http://localhost:5173).
 
 Flower simulation from the UI needs the `flwr` CLI on `PATH` (same environment as `pip install -e .` in `quickstart-pytorch`). A full federated run is slow (SMOTE + three models + DP-SGD × 3 clients × 5 rounds). Publish is the path that makes the ward board usable for a viva.
 
+Central upper-bound benchmark:
+
+```bash
+./flwr_env/bin/python -m ml.central_benchmark
+```
+
+This compares logistic regression, random forest, XGBoost, a small MLP, and a centrally stacked ensemble with and without fold-local SMOTE. Results are written to `ml/outputs/central_benchmark.json`.
+
 ## What to say in the viva
 
 - **Frontend:** hospital vs coordinator views; records never shown across hospitals.

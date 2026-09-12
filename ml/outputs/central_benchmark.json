@@ -1,0 +1,120 @@
+{
+  "protocol": {
+    "dataset": "UCI diabetic readmission, one row per patient",
+    "train_rows": 48981,
+    "test_rows": 10496,
+    "positive_rate_train": 0.08970825422102448,
+    "positive_rate_test": 0.0896532012195122,
+    "random_state": 42,
+    "cv_folds": 5,
+    "smote_rule": "SMOTE is fit only on each fold's training rows; validation and test rows are never resampled."
+  },
+  "conditions": [
+    {
+      "smote": false,
+      "models": {
+        "logistic_regression": {
+          "auroc": 0.634692598530461,
+          "auprc": 0.14974101556009212,
+          "accuracy": 0.9096798780487805,
+          "precision": 0.1111111111111111,
+          "recall": 0.0010626992561105207,
+          "f1": 0.002105263157894737,
+          "brier_score": 0.08013663987362944
+        },
+        "random_forest": {
+          "auroc": 0.6287665070115351,
+          "auprc": 0.15038521852247907,
+          "accuracy": 0.9103467987804879,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "brier_score": 0.07999025289763313
+        },
+        "xgboost": {
+          "auroc": 0.6492042545784765,
+          "auprc": 0.16850980671059543,
+          "accuracy": 0.9105373475609756,
+          "precision": 1.0,
+          "recall": 0.0021253985122210413,
+          "f1": 0.0042417815482502655,
+          "brier_score": 0.07916917170812396
+        },
+        "mlp": {
+          "auroc": 0.6040719565844812,
+          "auprc": 0.1352741849810231,
+          "accuracy": 0.9099657012195121,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "brier_score": 0.08119503579407904
+        },
+        "stacked_ensemble": {
+          "auroc": 0.6494974283345316,
+          "auprc": 0.16804463713346085,
+          "accuracy": 0.9098704268292683,
+          "precision": 0.3076923076923077,
+          "recall": 0.004250797024442083,
+          "f1": 0.008385744234800839,
+          "brier_score": 0.07943587295166843
+        }
+      },
+      "best_single_model": "xgboost",
+      "best_single_auroc": 0.6492042545784765,
+      "stacked_ensemble_auroc": 0.6494974283345316
+    },
+    {
+      "smote": true,
+      "models": {
+        "logistic_regression": {
+          "auroc": 0.6245231616720914,
+          "auprc": 0.14312781703272795,
+          "accuracy": 0.6099466463414634,
+          "precision": 0.12383679312813171,
+          "recall": 0.5515409139213603,
+          "f1": 0.20226032735775526,
+          "brier_score": 0.23360040585824446
+        },
+        "random_forest": {
+          "auroc": 0.6180725605046238,
+          "auprc": 0.14099826819103203,
+          "accuracy": 0.9102515243902439,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "brier_score": 0.08364534699480793
+        },
+        "xgboost": {
+          "auroc": 0.6182242078552994,
+          "auprc": 0.1400303134339271,
+          "accuracy": 0.9102515243902439,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "brier_score": 0.08502426072891055
+        },
+        "mlp": {
+          "auroc": 0.5364363484296686,
+          "auprc": 0.09873553863937504,
+          "accuracy": 0.8078315548780488,
+          "precision": 0.1072992700729927,
+          "recall": 0.15621679064824653,
+          "f1": 0.12721765469493726,
+          "brier_score": 0.15011781701761337
+        },
+        "stacked_ensemble": {
+          "auroc": 0.6374084596644184,
+          "auprc": 0.15300483962232908,
+          "accuracy": 0.9103467987804879,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "brier_score": 0.07978296970239727
+        }
+      },
+      "best_single_model": "logistic_regression",
+      "best_single_auroc": 0.6245231616720914,
+      "stacked_ensemble_auroc": 0.6374084596644184
+    }
+  ]
+}
