@@ -29,7 +29,7 @@ from pytorchexample.task import (  # noqa: E402
     train_base_learners,
 )
 from ml.config import CLEAN_DATA_PATH
-from ml.data.preprocess import preprocess_dataset
+from ml.data.preprocess import get_train_data
 
 
 def _load_net(path: Path) -> Net:
@@ -53,7 +53,7 @@ def build_serving_bundle(max_rows: int = 8000) -> dict:
     ARTIFACTS.mkdir(parents=True, exist_ok=True)
     started = time.time()
 
-    preprocess_dataset()
+    get_train_data()
     raw = pd.read_csv(CLEAN_DATA_PATH)
     y_all = raw["readmitted"].astype(int).values
     rng = np.random.RandomState(7)
